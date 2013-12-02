@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script src="/socket.io/socket.io.js"></script>
+    <script type='text/javascript' src='/javascripts/jquery.js'></script>
+  </head>
+  <body>
+  <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
+
+    <div class="message" style="display: none">
+        <input type="text" id="message-box">
+        <input type="button" id="submit" value="submit">
+    </div>
+    <div class="log">
+        <ul></ul>
+    </div>
+
+    <script type="text/javascript">
+        var socket = io.connect('http://localhost:3000');
+        socket.on('first', function (data) {
+            $('.message').show(300);
+            console.log(data + 'connection established');
+            //socket.emit('my other event', { my: 'data' });
+        });
+
+        socket.on('msg', function (data) {
+            alert(data);
+        })
+        //review socket/socket.io生命周期
+        // socket.on('initial', function(data) not work
+        socket.on('connect', function(data) {
+            // do whatever with data
+            console.log('initial data --->  ' + data);
+            // TODO top level, disconnection to remove data in DB
+            socket.emit('updateDevice', {'url':location.href, 'deviceId': getDeviceId()} );
+            //socket.emit('addDevice',location.href);
+        });
+
+        $('#submit').click(function(){
+            var msg = $('#message-box').val();
+            if(msg){
+                socket.emit('message',{ my:  $('#message-box').val() });
+                $('#message-box').val('');
+                $('.log ul').prepend('<li>' + msg +'</li>');
+            }else{
+                alert('no message input!');
+            }
+        });
+
+        //TODO L2  platform_browserType_browserVersion_UUID, no user id
+        // http://stackoverflow.com/questions/3514784/what-is-the-best-way-to-detect-a-handheld-device-in-jquery
+        // http://www.quirksmode.org/js/detect.html
+        function getDeviceId(){
+            var deviceIdKey = "deviceId";
+            // TODO L4 handle localStorage compatibility
+            var deviceId = localStorage.getItem(deviceIdKey);
+            if(deviceId){
+                return deviceId;
+            }else{
+                deviceId = navigator.platform + '_' + generateUid();
+                localStorage.setItem(deviceIdKey, deviceId)
+                return deviceId;
+            }
+        }
+
+        function generateUid() {
+            function S4() {
+                return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+            }
+            var delim = "";
+            return (S4() + S4() + delim + S4() + delim + S4() + delim + S4() + delim + S4() + S4() + S4());
+        }
+    </script>
+  </body>
+</html>

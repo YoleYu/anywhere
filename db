@@ -1,0 +1,12 @@
+account name: only can be number and [a-z]
+
+account:[id]:name           String
+account:[id]:email          String
+account:[id]:password       String
+account:[id]:messageCount   number
+account:[id]:history        list(String)  size = 20
+
+
+socket:
+
+socket:[accountId]         [deviceId]  :  [socketId]
